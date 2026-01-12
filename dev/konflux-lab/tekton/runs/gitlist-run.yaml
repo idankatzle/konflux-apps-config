@@ -1,0 +1,14 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  generateName: gitlist-run-
+spec:
+  pipelineRef:
+    name: gitlist-pipeline
+  params:
+    - name: repo_url
+      value: https://github.com/idankatzle/DevOps
+  workspaces:
+    - name: source
+      emptyDir: {}
+
