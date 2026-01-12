@@ -1,0 +1,39 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: build-pipeline
+spec:
+  params:
+    - name: repo_url
+      type: string
+      description: Git repository URL
+    - name: image
+      type: string
+      description: Image destination (registry/namespace/name:tag)
+
+  workspaces:
+    - name: source
+
+  tasks:
+    - name: clone
+      taskRef:
+        name: git-clone-local
+      params:
+        - name: repo_url
+          value: $(params.repo_url)
+      workspaces:
+        - name: source
+          workspace: source
+
+    - name: build
+      runAfter:
+        - clone
+      taskRef:
+        name: build-kaniko
+      params:
+        - name: image
+          value: $(params.image)
+      workspaces:
+        - name: source
+          workspace: source
+
