@@ -1,3 +1,4 @@
+---
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
@@ -13,10 +14,8 @@ spec:
     - name: dockerfile
       type: string
       default: Dockerfile
-
   workspaces:
     - name: source
-
   steps:
     - name: build-and-push
       image: gcr.io/kaniko-project/executor:latest
@@ -26,7 +25,6 @@ spec:
         - "--destination=$(params.image)"
         - "--insecure"
         - "--skip-tls-verify"
-       env:
+      env:
         - name: DOCKER_CONFIG
           value: /kaniko/.docker/
-
