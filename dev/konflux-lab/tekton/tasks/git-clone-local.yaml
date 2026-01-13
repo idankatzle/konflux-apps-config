@@ -6,15 +6,22 @@ spec:
   params:
     - name: repo_url
       type: string
-      description: Git repository URL
   workspaces:
     - name: source
-      description: Workspace where the repo will be cloned
   steps:
     - name: clone
-      image: registry.access.redhat.com/ubi9/ubi:latest
+      image: alpine/git
       script: |
+        #!/bin/sh
         set -eux
-        dnf install -y git
-        git clone $(params.repo_url) $(workspaces.source.path)
+        # 1. ניקוי מוחלט של ה-Workspace
+        rm -rf $(workspaces.source.path)/*
+        rm -rf $(workspaces.source.path)/.[!.]*
 
+        # 2. ביצוע Clone ישירות לתוך ה-Workspace
+        # שים לב לנקודה בסוף - היא קריטית כדי שלא תיווצר תיקיית משנה
+        git clone $(params.repo_url) $(workspaces.source.path)/.
+
+        # 3. אימות (Verification) - זה מה שיעזור לנו לדבג
+        echo "Check if Dockerfile exists:"
+        ls -la $(workspaces.source.path)

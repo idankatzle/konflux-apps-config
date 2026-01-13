@@ -1,30 +1,52 @@
----
 apiVersion: tekton.dev/v1
 kind: Task
 metadata:
   name: build-kaniko
+  namespace: idankatz-dev
 spec:
+  description: >
+    Build and push container image using Kaniko
+
   params:
-    - name: image
+    - name: IMAGE
       type: string
-      description: Full image name including registry
-    - name: context
+      description: Full image name including registry and tag
+
+    - name: CONTEXT
       type: string
-      default: .
-    - name: dockerfile
+      description: Build context path
+      default: /workspace/source
+
+    - name: DOCKERFILE
       type: string
-      default: Dockerfile
+      description: Path to Dockerfile
+      default: /workspace/source/Dockerfile
+
   workspaces:
     - name: source
+      description: Workspace containing the source code
+
   steps:
+    - name: debug-workspace
+      image: registry.access.redhat.com/ubi9/ubi
+      script: |
+        echo "PWD:"
+        pwd
+        echo "Workspace content:"
+        ls -la /workspace
+        echo "Source workspace:"
+        ls -la /workspace/source
+
     - name: build-and-push
-      image: gcr.io/kaniko-project/executor:latest
-      args:
-        - "--dockerfile=$(workspaces.source.path)/DevOps/$(params.dockerfile)"
-        - "--context=$(workspaces.source.path)/DevOps"
-        - "--destination=$(params.image)"
-        - "--insecure"
-        - "--skip-tls-verify"
+      image: gcr.io/kaniko-project/executor:v1.22.0
       env:
         - name: DOCKER_CONFIG
-          value: /kaniko/.docker/
+          value: /kaniko/.docker
+      args:
+        - --context=$(params.CONTEXT)
+        - --dockerfile=$(params.DOCKERFILE)
+        - --destination=$(params.IMAGE)
+        - --insecure
+        - --skip-tls-verify
+        - --verbosity=info
+

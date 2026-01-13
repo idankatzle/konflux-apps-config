@@ -1,4 +1,3 @@
----
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
@@ -7,14 +6,16 @@ spec:
   params:
     - name: repo_url
       type: string
-      description: Git repository URL
     - name: image
       type: string
-      description: Full image destination (registry/namespace/name:tag)
-
+    - name: CONTEXT
+      type: string
+      default: "src"
+    - name: DOCKERFILE
+      type: string
+      default: "Dockerfile"
   workspaces:
     - name: source
-
   tasks:
     - name: clone
       taskRef:
@@ -25,15 +26,43 @@ spec:
       workspaces:
         - name: source
           workspace: source
-
     - name: build
-      runAfter:
-        - clone
-      taskRef:
-        name: build-kaniko
-      params:
-        - name: image
-          value: $(params.image)
+      runAfter: [clone]
       workspaces:
         - name: source
           workspace: source
+      taskSpec:
+        # הגדרת הצרכים של ה-Task הספציפי הזה
+        params:
+          - name: IMAGE
+          - name: CONTEXT
+          - name: DOCKERFILE
+        workspaces:
+          - name: source
+        steps:
+          - name: build-and-push
+            image: gcr.io/kaniko-project/executor:latest
+            command: ["/kaniko/executor"]
+            args:
+              # שים לב לשינוי: workspaces במקום params עבור הנתיב
+              - "--dockerfile=$(workspaces.source.path)/$(params.CONTEXT)/$(params.DOCKERFILE)"
+              - "--context=$(workspaces.source.path)/$(params.CONTEXT)"
+              - "--destination=$(params.IMAGE)"
+              - "--skip-tls-verify"
+            volumeMounts:
+              - name: kaniko-secret
+                mountPath: /kaniko/.docker/
+        volumes:
+          - name: kaniko-secret
+            secret:
+              secretName: kaniko-docker-cfg
+              items:
+                - key: config.json
+                  path: config.json
+      params:
+        - name: IMAGE
+          value: $(params.image)
+        - name: CONTEXT
+          value: $(params.CONTEXT)
+        - name: DOCKERFILE
+          value: $(params.DOCKERFILE)

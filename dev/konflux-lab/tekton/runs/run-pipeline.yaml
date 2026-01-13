@@ -1,0 +1,25 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  generateName: build-pipeline-run-
+spec:
+  pipelineRef:
+    name: build-pipeline
+  serviceAccountName: pipeline
+  params:
+    - name: repo_url
+      value: "https://github.com/idankatzle/DevOps"
+    - name: image
+      value: "image-registry.openshift-image-registry.svc:5000/idankatz-dev/konflux-lab:latest"
+    - name: CONTEXT
+      value: "src"
+    - name: DOCKERFILE
+      value: "Dockerfile"
+  workspaces:
+    - name: source # השם הזה חייב להתאים ל-workspaces ב-Pipeline
+      volumeClaimTemplate:
+        spec:
+          accessModes: [ReadWriteOnce]
+          resources:
+            requests:
+              storage: 1Gi

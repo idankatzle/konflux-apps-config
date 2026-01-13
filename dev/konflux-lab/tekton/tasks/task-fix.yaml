@@ -1,0 +1,31 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: git-clone-local
+spec:
+  workspaces:
+    - name: source
+  params:
+    - name: repo_url
+      type: string
+  steps:
+    - name: clone
+      image: alpine/git
+      script: |
+        # ניקוי התיקייה
+        rm -rf $(workspaces.source.path)/* $(workspaces.source.path)/.* 2>/dev/null || true
+        cd $(workspaces.source.path)
+        
+        # שיבוט הקוד
+        git clone $(params.repo_url) .
+        
+        echo "--- LOCATING DOCKERFILE ---"
+        # מחפש את הקובץ בכל התיקיות ומציג את הנתיב שלו
+        FOUND=$(find . -maxdepth 3 -name "*Dockerfile*" -o -name "*dockerfile*")
+        if [ -z "$FOUND" ]; then
+          echo "❌ ERROR: No Dockerfile found anywhere in the repo!"
+          ls -R
+          exit 1
+        else
+          echo "✅ FOUND DOCKERFILE AT: $FOUND"
+        fi

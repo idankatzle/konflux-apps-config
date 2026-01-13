@@ -1,0 +1,18 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  generateName: build-run-
+  namespace: idankatz-dev
+spec:
+  pipelineRef:
+    name: build-pipeline
+  params:
+    - name: repo_url
+      value: https://github.com/idankatzle/DevOps
+    - name: image
+      value: image-registry.openshift-image-registry.svc:5000/idankatz-dev/konflux-lab:latest
+  workspaces:
+    - name: source
+      emptyDir: {}
+  taskRunTemplate:
+    serviceAccountName: pipeline
