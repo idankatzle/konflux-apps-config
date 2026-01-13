@@ -1,23 +1,22 @@
-# Base image with Python 3.9 pre-installed
-FROM registry.access.redhat.com/ubi9/python-39:latest
+# משתמשים באימג' מוכן של פייתון (מבוסס אובונטו/דביאן, קל מאוד)
+FROM python:3.12-slim
 
-# Set working directory inside the container
+# הגדרת תיקיית עבודה
 WORKDIR /app
 
-# Copy requirements first to leverage Docker cache
+# העתקת קובץ הדרישות
 COPY src/requirements.txt .
 
-# Install dependencies (Flask, PyMySQL, etc.)
+# התקנה גלובלית (בלי --user) כך שפייתון ימצא אותה מיד
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the rest of the application code
+# העתקת הקוד
 COPY src/ .
 
-# Set permissions for OpenShift non-root user
-USER 1001
+# יצירת משתמש לא-פריבילגי (חובה ל-OpenShift)
+RUN useradd -m appuser && chown -R appuser /app
+USER appuser
 
-# Expose the Flask port
+# הפעלה
 EXPOSE 5000
-
-# Start the application
 CMD ["python", "app.py"]
