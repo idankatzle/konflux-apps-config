@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: konflux-app
+  namespace: idankatz-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: konflux-app
+  template:
+    metadata:
+      labels:
+        app: konflux-app
+    spec:
+      containers:
+      - name: web
+        image: image-registry.openshift-image-registry.svc:5000/idankatz-dev/konflux-lab:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5000
+        env:
+        # אלו המשתנים שהאפליקציה מחפשת כדי להכריז על "Connection Available"
+        - name: DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: username
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-credentials
+              key: password
+        - name: DB_HOST
+          value: "postgresql"
+        - name: DB_NAME
+          value: "sampledb"
+        # משתנה הסביבה הקריטי שפתר לנו את בעיית ה-Flask
+        - name: PYTHONPATH
+          value: "/home/appuser/.local/lib/python3.12/site-packages"
+        # טריק קטן: שינוי הערך פה יכריח את OpenShift לרענן את הפוד מיד
+        - name: RESTART_ID
+          value: "retry-db-connection-1"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: konflux-service
+  namespace: idankatz-dev
+spec:
+  selector:
+    app: konflux-app
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 5000
+  type: ClusterIP
+
+---
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: konflux-route
+  namespace: idankatz-dev
+spec:
+  to:
+    kind: Service
+    name: konflux-service
+  port:
+    targetPort: 5000

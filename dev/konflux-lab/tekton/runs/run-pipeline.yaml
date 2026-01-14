@@ -16,8 +16,9 @@ spec:
     - name: DOCKERFILE
       value: "Dockerfile"
   workspaces:
-    - name: source # השם הזה חייב להתאים ל-workspaces ב-Pipeline
-      volumeClaimTemplate:
+    - name: source 
+      persistentVolumeClaim:
+        claimName: tekton-shared-pvc
         spec:
           accessModes: [ReadWriteOnce]
           resources:

@@ -26,13 +26,20 @@ spec:
       workspaces:
         - name: source
           workspace: source
+
     - name: build
       runAfter: [clone]
       workspaces:
         - name: source
           workspace: source
+      params:
+        - name: IMAGE
+          value: $(params.image)
+        - name: CONTEXT
+          value: $(params.CONTEXT)
+        - name: DOCKERFILE
+          value: $(params.DOCKERFILE)
       taskSpec:
-        # הגדרת הצרכים של ה-Task הספציפי הזה
         params:
           - name: IMAGE
           - name: CONTEXT
@@ -44,7 +51,6 @@ spec:
             image: gcr.io/kaniko-project/executor:latest
             command: ["/kaniko/executor"]
             args:
-              # שים לב לשינוי: workspaces במקום params עבור הנתיב
               - "--dockerfile=$(workspaces.source.path)/$(params.CONTEXT)/$(params.DOCKERFILE)"
               - "--context=$(workspaces.source.path)/$(params.CONTEXT)"
               - "--destination=$(params.IMAGE)"
@@ -59,10 +65,15 @@ spec:
               items:
                 - key: config.json
                   path: config.json
-      params:
-        - name: IMAGE
-          value: $(params.image)
-        - name: CONTEXT
-          value: $(params.CONTEXT)
-        - name: DOCKERFILE
-          value: $(params.DOCKERFILE)
+
+    # --- השלב החדש שהוספנו ---
+    - name: deploy
+      runAfter: [build] # ירוץ רק אם ה-build הצליח
+      taskSpec:
+        steps:
+          - name: rollout
+            image: quay.io/openshift/origin-cli:latest
+            script: |
+              #!/usr/bin/env bash
+              oc rollout restart deployment/my-web -n idankatz-dev
+              oc rollout status deployment/my-web -n idankatz-dev
