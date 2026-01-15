@@ -1,0 +1,24 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: idan-first-pipeline
+spec:
+  workspaces:
+    - name: pipeline-shared-data # השם הכללי בתוך ה-Pipeline
+  tasks:
+    - name: clone-code
+      taskRef:
+        name: git-clone-local
+      workspaces:
+        - name: output
+          workspace: pipeline-shared-data
+      params:
+        - name: repo_url
+          value: "https://github.com/idankatzle/dev.git"
+    - name: list-files
+      runAfter: ["clone-code"]
+      taskRef:
+        name: hello-task
+      workspaces:
+        - name: source # חייב להיות זהה למה שכתוב בתוך hello-task
+          workspace: pipeline-shared-data

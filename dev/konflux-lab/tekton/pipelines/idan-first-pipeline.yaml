@@ -1,0 +1,24 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: idan-first-pipeline
+spec:
+  workspaces:
+    - name: shared-data
+  tasks:
+    - name: clone-code
+      taskRef:
+        name: git-clone-local
+      workspaces:
+        - name: source
+          workspace: shared-data
+      params:
+        - name: repo_url
+          value: "https://github.com/idankatzle/dev.git"
+    - name: list-files
+      runAfter: ["clone-code"]
+      taskRef:
+        name: hello-task
+      workspaces:
+        - name: task-workspace
+          workspace: shared-data

@@ -1,0 +1,39 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: hello-task
+spec:
+  workspaces:
+    - name: task-workspace # שם ה-workspace בתוך ה-Task
+  steps:
+    - name: list-files
+      image: alpine
+      script: |
+        #!/bin/sh
+        ls -R $(workspaces.task-workspace.path)
+---
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: idan-first-pipeline
+spec:
+  workspaces:
+    - name: pipeline-shared-data # שם ה-workspace ברמת ה-Pipeline
+  tasks:
+    - name: clone-code
+      taskRef:
+        name: git-clone-local
+      workspaces:
+        - name: output
+          workspace: pipeline-shared-data
+      params:
+        - name: repo_url
+          value: "https://github.com/idankatzle/dev.git"
+    - name: list-files
+      runAfter: ["clone-code"]
+      taskRef:
+        name: hello-task
+      workspaces:
+        - name: task-workspace  # כאן אנחנו מחברים את ה-Task ל-Pipeline
+          workspace: pipeline-shared-data

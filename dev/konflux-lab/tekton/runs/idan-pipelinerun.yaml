@@ -1,0 +1,12 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  generateName: idan-victory-run-
+spec:
+  pipelineRef:
+    name: idan-first-pipeline
+  serviceAccountName: pipeline
+  workspaces:
+    - name: shared-data
+      persistentVolumeClaim:
+        claimName: pipeline-pvc
