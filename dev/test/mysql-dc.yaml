@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mysql-new
+  namespace: idankatz-dev
+  labels:
+    app: mysql-new
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mysql-new
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mysql-new
+    spec:
+      containers:
+        - name: mysql
+          image: image-registry.openshift-image-registry.svc:5000/openshift/mysql:8.0-el8
+          env:
+            - name: MYSQL_USER
+              valueFrom:
+                secretKeyRef:
+                  key: database-user
+                  name: mysql
+            - name: MYSQL_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: database-password
+                  name: mysql
+            - name: MYSQL_ROOT_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  key: database-root-password
+                  name: mysql
+            - name: MYSQL_DATABASE
+              valueFrom:
+                secretKeyRef:
+                  key: database-name
+                  name: mysql
+          ports:
+            - containerPort: 3306
+              protocol: TCP
+          livenessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -i
+                - -c
+                - MYSQL_PWD="$MYSQL_PASSWORD" mysqladmin -u $MYSQL_USER ping
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -i
+                - -c
+                - MYSQL_PWD="$MYSQL_PASSWORD" mysqladmin -u $MYSQL_USER ping
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            limits:
+              memory: 512Mi
+          volumeMounts:
+            - mountPath: /var/lib/mysql/data
+              name: mysql-data
+      volumes:
+        - name: mysql-data
+          persistentVolumeClaim:
+            claimName: mysql
