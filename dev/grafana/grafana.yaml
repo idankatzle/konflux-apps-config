@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: grafana-simple
+  namespace: idankatz-dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: grafana
+  template:
+    metadata:
+      labels:
+        app: grafana
+    spec:
+      securityContext:
+        runAsUser: 1003820000
+        fsGroup: 1003820000
+      containers:
+      - name: grafana
+        image: grafana/grafana:latest
+        ports:
+        - containerPort: 3000
+        volumeMounts:
+        - name: grafana-storage-volume
+          mountPath: /var/lib/grafana # זה הנתיב שבו גרפאנה שומרת דשבורדים
+        env:
+        - name: GF_AUTH_ANONYMOUS_ENABLED
+          value: "true"
+        - name: GF_AUTH_ANONYMOUS_ORG_ROLE
+          value: Admin
+      volumes:
+      - name: grafana-storage-volume
+        persistentVolumeClaim:
+          claimName: grafana-storage
