@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: my-web
+  name: my-web
+  namespace: idankatz-dev
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: my-web
+  template:
+    metadata:
+      labels:
+        app: my-web
+    spec:
+      shareProcessNamespace: true  # <--- זה התיקון הקריטי שיאפשר לראות נתונים
+      containers:
+      - name: parksmap
+        image: image-registry.openshift-image-registry.svc:5000/idankatz-dev/konflux-lab:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1G
+          requests:
+            cpu: 100m
+            memory: 512Mi
+        volumeMounts:
+        - mountPath: /mnt/data
+          name: my-efs
+      - name: process-exporter
+        image: ncabatoff/process-exporter
+        args:
+        - "-procall"
+        ports:
+        - containerPort: 9256
+          protocol: TCP
+      volumes:
+      - name: my-efs
+        persistentVolumeClaim:
+          claimName: my-efs

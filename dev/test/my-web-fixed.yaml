@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-web
+  namespace: idankatz-dev
+  labels:
+    app: my-web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: my-web
+  template:
+    metadata:
+      labels:
+        app: my-web
+    spec:
+      containers:
+      # 1. המכולה המקורית שלך עם ה-Image הנכון
+      - name: parksmap
+        image: image-registry.openshift-image-registry.svc:5000/idankatz-dev/konflux-lab:latest
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        envFrom:
+        - secretRef:
+            name: git-creds
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1G
+          requests:
+            cpu: 100m
+            memory: 512Mi
+        volumeMounts:
+        - mountPath: /mnt/data
+          name: my-efs
+
+      # 2. ה-Sidecar של המטריקות (ללא בעיות הרשאה כי הוא ציבורי)
+      - name: process-exporter
+        image: ncabatoff/process-exporter
+        ports:
+        - containerPort: 9256
+        args:
+          - "-procnames"
+          - "parksmap" # השם של המכולה הראשונה
+
+      volumes:
+      - name: my-efs
+        persistentVolumeClaim:
+          claimName: my-efs

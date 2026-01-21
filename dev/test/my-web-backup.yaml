@@ -1,0 +1,126 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "28"
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"apps/v1","kind":"Deployment","metadata":{"annotations":{"deployment.kubernetes.io/revision":"18"},"creationTimestamp":"2026-01-14T08:22:03Z","generation":62,"labels":{"app":"my-web"},"name":"my-web","namespace":"idankatz-dev","resourceVersion":"7092821777","uid":"8b2e248b-197d-4fb7-9649-89a8ebc17910"},"spec":{"progressDeadlineSeconds":600,"replicas":3,"revisionHistoryLimit":10,"selector":{"matchLabels":{"app":"my-web"}},"strategy":{"rollingUpdate":{"maxSurge":"25%","maxUnavailable":"25%"},"type":"RollingUpdate"},"template":{"metadata":{"annotations":{"kubectl.kubernetes.io/restartedAt":"2026-01-15T08:05:30Z"},"creationTimestamp":null,"labels":{"app":"my-web"}},"spec":{"containers":[{"image":"image-registry.openshift-image-registry.svc:5000/idankatz-dev/konflux-lab:latest","imagePullPolicy":"Always","name":"parksmap","ports":[{"containerPort":8080,"protocol":"TCP"}],"resources":{"limits":{"cpu":"500m","memory":"1G"},"requests":{"cpu":"100m","memory":"512Mi"}},"terminationMessagePath":"/dev/termination-log","terminationMessagePolicy":"File"}],"dnsPolicy":"ClusterFirst","restartPolicy":"Always","schedulerName":"default-scheduler","securityContext":{},"terminationGracePeriodSeconds":30}}},"status":{"availableReplicas":2,"conditions":[{"lastTransitionTime":"2026-01-14T08:22:03Z","lastUpdateTime":"2026-01-15T08:05:34Z","message":"ReplicaSet \"my-web-9b647cdd5\" has successfully progressed.","reason":"NewReplicaSetAvailable","status":"True","type":"Progressing"},{"lastTransitionTime":"2026-01-15T09:29:54Z","lastUpdateTime":"2026-01-15T09:29:54Z","message":"Deployment has minimum availability.","reason":"MinimumReplicasAvailable","status":"True","type":"Available"}],"observedGeneration":62,"readyReplicas":2,"replicas":2,"updatedReplicas":2}}
+  creationTimestamp: "2026-01-14T08:22:03Z"
+  generation: 86
+  labels:
+    app: my-web
+  name: my-web
+  namespace: idankatz-dev
+  resourceVersion: "7124891601"
+  uid: 8b2e248b-197d-4fb7-9649-89a8ebc17910
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 2
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: my-web
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/restartedAt: "2026-01-15T08:05:30Z"
+      creationTimestamp: null
+      labels:
+        app: my-web
+    spec:
+      containers:
+      - env:
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              key: database-name
+              name: mysql
+        - name: DB_USERNAME
+          valueFrom:
+            secretKeyRef:
+              key: database-name
+              name: mysql
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: database-password
+              name: mysql
+        - name: DB_NAME
+          valueFrom:
+            secretKeyRef:
+              key: database-name
+              name: mysql
+        envFrom:
+        - secretRef:
+            name: git-creds
+        image: image-registry.openshift-image-registry.svc:5000/idankatz-dev/konflux-lab:latest
+        imagePullPolicy: Always
+        livenessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 5
+        name: parksmap
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: 8080
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 1
+        resources:
+          limits:
+            cpu: 500m
+            memory: 1G
+          requests:
+            cpu: 100m
+            memory: 512Mi
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+        volumeMounts:
+        - mountPath: /mnt/data
+          name: my-efs
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: my-efs
+        persistentVolumeClaim:
+          claimName: my-efs
+status:
+  availableReplicas: 2
+  conditions:
+  - lastTransitionTime: "2026-01-14T08:22:03Z"
+    lastUpdateTime: "2026-01-18T12:38:00Z"
+    message: ReplicaSet "my-web-5bd5b7d768" has successfully progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  - lastTransitionTime: "2026-01-19T06:53:42Z"
+    lastUpdateTime: "2026-01-19T06:53:42Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  observedGeneration: 86
+  readyReplicas: 2
+  replicas: 2
+  updatedReplicas: 2
