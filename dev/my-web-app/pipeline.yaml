@@ -1,99 +1,43 @@
 apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
-  creationTimestamp: '2026-01-22T10:42:39Z'
-  generation: 1
-  managedFields:
-    - apiVersion: tekton.dev/v1
-      fieldsType: FieldsV1
-      fieldsV1:
-        'f:spec':
-          .: {}
-          'f:finally': {}
-          'f:params': {}
-          'f:tasks': {}
-          'f:workspaces': {}
-      manager: Mozilla
-      operation: Update
-      time: '2026-01-22T10:42:39Z'
   name: deploy-my-app
-  namespace: idankatz-dev
-  resourceVersion: '7147135156'
-  uid: 34e45fd9-52db-4551-82d4-05b43bd0f45b
 spec:
-  finally:
-    - name: openshift-client
-      params:
-        - name: SCRIPT
-          value: |-
-            cd $(workspaces.manifest_dir.path)/$(params.APP_PATH)
-            oc apply -k .
-        - name: VERSION
-          value: latest
-      taskRef:
-        params:
-          - name: kind
-            value: task
-          - name: name
-            value: openshift-client
-          - name: namespace
-            value: openshift-pipelines
-        resolver: cluster
-      workspaces:
-        - name: manifest_dir
-          workspace: shared-data
   params:
-    - default: dev/my-web-app/base
-      name: APP_PATH
+    - name: APP_PATH
+      default: dev/my-web-app/base
       type: string
-    - default: 'https://github.com/idankatzle/konflux-apps-config.git'
-      name: GIT_URL
+    - name: GIT_URL
+      default: 'https://github.com/idankatzle/konflux-apps-config.git'
       type: string
+  workspaces:
+    - name: shared-data
   tasks:
     - name: git-clone
       params:
-        - name: CRT_FILENAME
-          value: ca-bundle.crt
-        - name: HTTP_PROXY
-          value: ''
-        - name: HTTPS_PROXY
-          value: ''
-        - name: NO_PROXY
-          value: ''
-        - name: SUBDIRECTORY
-          value: ''
-        - name: USER_HOME
-          value: /home/git
-        - name: DELETE_EXISTING
-          value: 'true'
-        - name: VERBOSE
-          value: 'false'
-        - name: SSL_VERIFY
-          value: 'true'
         - name: URL
           value: $(params.GIT_URL)
         - name: REVISION
           value: master
-        - name: REFSPEC
-          value: ''
-        - name: SUBMODULES
+        - name: DELETE_EXISTING
           value: 'true'
-        - name: DEPTH
-          value: '1'
-        - name: SPARSE_CHECKOUT_DIRECTORIES
-          value: ''
       taskRef:
-        params:
-          - name: kind
-            value: task
-          - name: name
-            value: git-clone
-          - name: namespace
-            value: openshift-pipelines
-        resolver: cluster
+        kind: ClusterTask
+        name: git-clone
       workspaces:
         - name: output
           workspace: shared-data
-  workspaces:
-    - name: shared-data
-
+    - name: apply-manifests
+      runAfter:
+        - git-clone
+      params:
+        - name: SCRIPT
+          value: |
+            cd $(workspaces.manifest_dir.path)/$(params.APP_PATH)
+            oc apply -k .
+      taskRef:
+        kind: ClusterTask
+        name: openshift-client
+      workspaces:
+        - name: manifest_dir
+          workspace: shared-data
