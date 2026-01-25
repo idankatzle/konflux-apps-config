@@ -19,7 +19,7 @@ spec:
     spec:
       shareProcessNamespace: true
       containers:
-      - image: image-registry.openshift-image-registry.svc:5000/idankatz-dev/konflux-lab:latest
+      - image: image: quay.io/redhattraining/hello-world:latest
         imagePullPolicy: Always
         name: parksmap
         ports:
