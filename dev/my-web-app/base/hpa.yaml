@@ -1,24 +1,12 @@
-apiVersion: autoscaling/2
+apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
 metadata:
   name: my-app-autoscaler
 spec:
   scaleTargetRef:
-    apiVersion: apps/1
+    apiVersion: apps/v1
     kind: Deployment
-    name: map-app
+    name: my-web
   minReplicas: 1
-  maxReplicas: 3
-  metrics:
-  - type: Resource
-    resource:
-      name: cpu
-      target:
-        type: Utilization
-        averageUtilization: 50
-  - type: Resource
-    resource:
-      name: memory
-      target:
-        type: Utilization
-        averageUtilization: 50
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
