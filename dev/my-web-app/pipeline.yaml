@@ -3,26 +3,19 @@ kind: Pipeline
 metadata:
   name: deploy-my-app
 spec:
-  params:
-    - name: APP_PATH
-      default: dev/my-web-app/base
-      type: string
-    - name: GIT_URL
-      default: 'https://github.com/idankatzle/konflux-apps-config.git'
-      type: string
   workspaces:
     - name: shared-data
   tasks:
     - name: git-clone
       params:
-        - name: URL
-          value: $(params.GIT_URL)
-        - name: REVISION
+        - name: url
+          value: https://github.com/idankatzle/konflux-apps-config.git
+        - name: revision
           value: master
-        - name: DELETE_EXISTING
+        - name: deleteExisting
           value: 'true'
       taskRef:
-        kind: ClusterTask
+        kind: Task
         name: git-clone
       workspaces:
         - name: output
@@ -33,11 +26,21 @@ spec:
       params:
         - name: SCRIPT
           value: |
-            cd $(workspaces.manifest_dir.path)/$(params.APP_PATH)
-            oc apply -k .
+            # Navigation to the exact path from your GitHub structure
+            TARGET_DIR="$(workspaces.manifest-dir.path)/dev/my-web-app/base"
+            
+            if [ -d "$TARGET_DIR" ]; then
+              cd "$TARGET_DIR"
+              echo "Applying manifests from: $(pwd)"
+              oc apply -k .
+            else
+              echo "Directory not found! Current content of workspace:"
+              ls -R $(workspaces.manifest-dir.path)
+              exit 1
+            fi
       taskRef:
-        kind: ClusterTask
+        kind: Task
         name: openshift-client
       workspaces:
-        - name: manifest_dir
+        - name: manifest-dir
           workspace: shared-data
