@@ -1,0 +1,14 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: map-app-monitor
+  labels:
+    team: sres  # תווית שעוזרת לגרפנה המרכזית למצוא אותך ב-Red Hat
+spec:
+  selector:
+    matchLabels:
+      app: map-app # חייב להתאים ל-Label של ה-Service שלך
+  endpoints:
+  - port: 8080-tcp # השם של הפורט כפי שמופיע ב-Service YAML
+    path: /metrics
+    interval: 30s
