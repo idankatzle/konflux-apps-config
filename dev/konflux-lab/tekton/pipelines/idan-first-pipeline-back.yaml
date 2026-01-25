@@ -10,14 +10,11 @@ spec:
       taskRef:
         name: git-clone-local
       workspaces:
-        - name: output
+        - name: source
           workspace: shared-data
       params:
         - name: repo_url
           value: "https://github.com/idankatzle/dev.git"
-        - name: revision # הוספת הפרמטר לציון ה-Branch
-          value: "master"
-
     - name: list-files
       runAfter: ["clone-code"]
       taskRef:
@@ -25,16 +22,3 @@ spec:
       workspaces:
         - name: task-workspace
           workspace: shared-data
-
-    - name: deploy-to-cluster
-      runAfter: ["list-files"]
-      taskRef:
-        name: oc-apply
-      workspaces:
-        - name: source
-          workspace: shared-data
-      params:
-        - name: script
-          value: |
-            # פריסה של ה-Manifests מהתיקייה שמשכנו
-            oc apply -k dev/my-web-app/base
