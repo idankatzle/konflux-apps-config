@@ -1,6 +1,5 @@
 resources:
   - db-pvc.yaml
-  - postgres-deployment.yaml 
   - postgres-deployment.yaml
   - deployment.yaml
   - service.yaml
