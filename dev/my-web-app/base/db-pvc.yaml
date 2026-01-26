@@ -4,8 +4,7 @@ metadata:
   name: sql-db-pvc
 spec:
   accessModes:
-    - ReadWriteOnce # הדיסק יכול להיקרא ולהיכתב על ידי פוד אחד בכל פעם (סטנדרט ל-DB)
+    - ReadWriteOnce
   resources:
     requests:
-      storage: 1Gi # גודל הדיסק. בתור התחלה 1 ג'יגה זה מספיק לניסויים
-  storageClassName: gp3-csi # ודא שזה ה-StorageClass שקיים אצלך (לרוב ב-AWS/Sandbox זה gp3 או standard)
+      storage: 1Gi
