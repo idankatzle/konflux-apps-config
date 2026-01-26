@@ -5,3 +5,4 @@ resources:
   - hpa.yaml  
   - pdb.yaml 
   - servicemonitor.yaml 
+  - db-pvc.yaml

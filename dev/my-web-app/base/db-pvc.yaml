@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: sql-db-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce # הדיסק יכול להיקרא ולהיכתב על ידי פוד אחד בכל פעם (סטנדרט ל-DB)
+  resources:
+    requests:
+      storage: 1Gi # גודל הדיסק. בתור התחלה 1 ג'יגה זה מספיק לניסויים
+  storageClassName: gp3-csi # ודא שזה ה-StorageClass שקיים אצלך (לרוב ב-AWS/Sandbox זה gp3 או standard)
