@@ -1,4 +1,5 @@
 resources:
+  - db-secret.yaml
   - db-pvc.yaml
   - postgres-deployment.yaml
   - deployment.yaml
