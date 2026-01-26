@@ -18,7 +18,6 @@ spec:
           ports:
             - containerPort: 5432
           env:
-            # שינוי: במקום value, משתמשים ב-valueFrom כדי למשוך מה-Secret
             - name: POSTGRES_DB
               valueFrom:
                 secretKeyRef:
@@ -34,13 +33,12 @@ spec:
                 secretKeyRef:
                   name: postgres-credentials
                   key: POSTGRES_PASSWORD
-            # משתנה ה-PGDATA נשאר כ-value כי הוא נתיב טכני, לא סוד
             - name: PGDATA
               value: /var/lib/postgresql/data/pgdata
           volumeMounts:
             - name: db-storage
               mountPath: /var/lib/postgresql/data
-              subPath: postgres-data 
+              subPath: postgres-data
       volumes:
         - name: db-storage
           persistentVolumeClaim:
