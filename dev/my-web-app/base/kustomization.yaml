@@ -1,10 +1,11 @@
 resources:
-  - deployment.yaml
+  - db-pvc.yaml
+  - postgres-deployment.yaml 
   - postgres-deployment.yaml
+  - deployment.yaml
   - service.yaml
   - postgres-service.yaml
   - route.yaml
   - hpa.yaml  
   - pdb.yaml 
   - servicemonitor.yaml 
-  - db-pvc.yaml

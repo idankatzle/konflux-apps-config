@@ -16,21 +16,9 @@ spec:
     spec:
       containers:
         - name: my-web
-          image: image-registry.openshift-image-registry.svc:5000/openshift/httpd:latest
+          image: image-registry.openshift-image-registry.svc:5000/openshift/httpd:latest 
           ports:
             - containerPort: 8080
-          env:
-            # Connection details for the Postgres database
-            - name: DB_HOST
-              value: postgres-db-service
-            - name: DB_PORT
-              value: "5432"
-            - name: DB_NAME
-              value: myappdb
-            - name: DB_USER
-              value: admin
-            - name: DB_PASSWORD
-              value: password123
           volumeMounts:
             - name: storage
               mountPath: /var/www/html
