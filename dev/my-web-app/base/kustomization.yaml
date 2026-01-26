@@ -2,6 +2,7 @@ resources:
   - deployment.yaml
   - postgres-deployment.yaml
   - service.yaml
+  - postgres-service.yaml
   - route.yaml
   - hpa.yaml  
   - pdb.yaml 

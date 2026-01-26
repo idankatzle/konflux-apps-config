@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-db-service
+spec:
+  selector:
+    app: postgres # Must match the label in postgres-deployment.yaml
+  ports:
+    - protocol: TCP
+      port: 5432      # The port other apps use to connect
+      targetPort: 5432 # The port the DB is actually listening on
+  type: ClusterIP
