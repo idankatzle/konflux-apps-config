@@ -1,0 +1,31 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: idan-second-pipeline
+spec:
+  workspaces:
+    - name: source # Using a single, standard workspace name
+  tasks:
+    - name: clone-code
+      taskRef:
+        name: git-clone-local
+      workspaces:
+        - name: output
+          workspace: source
+      params:
+        - name: repo_url
+          value: "https://github.com/idankatzle/dev.git"
+        - name: revision
+          value: "master"
+
+    - name: deploy-infrastructure
+      runAfter: ["clone-code"]
+      taskRef:
+        name: openshift-client
+      workspaces:
+        - name: source
+          workspace: source
+      params:
+        - name: SCRIPT
+          value: |
+            oc apply -k dev/my-web-app/base

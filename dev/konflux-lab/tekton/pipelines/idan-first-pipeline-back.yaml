@@ -1,24 +1,41 @@
-apiVersion: tekton.dev/v1beta1
+apiVersion: tekton.dev/v1
 kind: Pipeline
 metadata:
   name: idan-first-pipeline
 spec:
   workspaces:
-    - name: shared-data
+    - name: source
+
   tasks:
     - name: clone-code
       taskRef:
         name: git-clone-local
-      workspaces:
-        - name: source
-          workspace: shared-data
       params:
         - name: repo_url
-          value: "https://github.com/idankatzle/dev.git"
+          value: https://github.com/idankatzle/dev.git
+        - name: revision
+          value: master
+      workspaces:
+        - name: source          # ✅ MUST match Task
+          workspace: source
+
     - name: list-files
       runAfter: ["clone-code"]
       taskRef:
         name: hello-task
       workspaces:
-        - name: task-workspace
-          workspace: shared-data
+        - name: task-workspace  # ✅ matches hello-task
+          workspace: source     # same PVC
+
+    - name: deploy-to-cluster
+      runAfter: ["list-files"]
+      taskRef:
+        name: openshift-client
+      params:
+        - name: SCRIPT
+          value: |
+            oc apply -k dev/my-web-app/base
+      workspaces:
+        - name: source
+          workspace: source
+

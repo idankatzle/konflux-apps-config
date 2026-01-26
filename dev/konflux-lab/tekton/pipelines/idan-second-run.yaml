@@ -1,0 +1,11 @@
+apiVersion: tekton.dev/v1beta1
+kind: PipelineRun
+metadata:
+  name: idan-second-run-1
+spec:
+  pipelineRef:
+    name: idan-second-pipeline
+  workspaces:
+    - name: source
+      persistentVolumeClaim:
+        claimName: pipeline-pvc # From your screenshot
