@@ -1,16 +1,31 @@
 from flask import Flask, jsonify
+import folium
 
 app = Flask(__name__)
 
-@app.route('/')
+@app.route("/")
 def home():
-    return "<h1>Map App</h1><p>Status: Online</p>"
+    # יצירת מפה עולמית
+    world_map = folium.Map(
+        location=[20, 0],   # מרכז העולם
+        zoom_start=2,
+        tiles="OpenStreetMap"
+    )
 
-# New endpoint for health checks
-@app.route('/health')
+    # הוספת Marker לדוגמה
+    folium.Marker(
+        location=[31.77, 35.21],
+        popup="Jerusalem",
+        icon=folium.Icon(color="blue")
+    ).add_to(world_map)
+
+    # החזרת המפה כ-HTML
+    return world_map._repr_html_()
+
+@app.route("/health")
 def health_check():
-    # In a real app, you would check DB connection here
     return jsonify(status="UP"), 200
 
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=8080)
+
