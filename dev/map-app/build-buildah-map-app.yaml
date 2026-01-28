@@ -1,0 +1,28 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: build-buildah-map-app
+  namespace: idankatz-dev
+spec:
+  params:
+    - name: IMAGE
+      type: string
+  workspaces:
+    - name: source
+  steps:
+    - name: build-and-push
+      image: registry.redhat.io/rhel8/buildah
+      securityContext:
+        privileged: true
+      script: |
+        set -e
+
+        echo "Building image with Buildah"
+        buildah bud \
+          -f $(workspaces.source.path)/dev/Dockerfile \
+          -t $(params.IMAGE) \
+          $(workspaces.source.path)/dev
+
+        echo "Pushing image"
+        buildah push $(params.IMAGE)
+

@@ -1,0 +1,28 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: build-kaniko-map-app
+  namespace: idankatz-dev
+spec:
+  params:
+    - name: IMAGE
+      type: string
+  workspaces:
+    - name: source
+  steps:
+    - name: build-and-push
+      image: gcr.io/kaniko-project/executor:debug
+      script: |
+        #!/busybox/sh
+        set -e
+
+        echo "Starting Kaniko build"
+        echo "Image: $(params.IMAGE)"
+
+        /kaniko/executor \
+          --dockerfile=$(workspaces.source.path)/dev/Dockerfile \
+          --context=$(workspaces.source.path)/dev \
+          --destination=$(params.IMAGE) \
+          --cache=true \
+          --skip-tls-verify-registry=image-registry.openshift-image-registry.svc:5000
+

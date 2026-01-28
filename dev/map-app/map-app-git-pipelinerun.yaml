@@ -1,0 +1,56 @@
+apiVersion: tekton.dev/v1
+kind: PipelineRun
+metadata:
+  generateName: map-app-git-run-
+  namespace: idankatz-dev
+spec:
+  serviceAccountName: pipeline
+  pipelineSpec:
+    workspaces:
+      - name: shared-workspace
+    params:
+      - name: git-url
+        type: string
+      - name: git-revision
+        type: string
+      - name: image
+        type: string
+    tasks:
+      - name: clone-repo
+        taskRef:
+          name: git-clone
+        params:
+          - name: url
+            value: $(params.git-url)
+          - name: revision
+            value: $(params.git-revision)
+        workspaces:
+          - name: output
+            workspace: shared-workspace
+      - name: build-image
+        runAfter:
+          - clone-repo
+        taskRef:
+          name: build-kaniko-map-app
+        params:
+          - name: IMAGE
+            value: $(params.image)
+        workspaces:
+          - name: source
+            workspace: shared-workspace
+  params:
+    - name: git-url
+      value: https://github.com/idankatzle/konflux-apps-config.git
+    - name: git-revision
+      value: HEAD
+    - name: image
+      value: image-registry.openshift-image-registry.svc:5000/idankatz-dev/map-app:latest
+  workspaces:
+    - name: shared-workspace
+      volumeClaimTemplate:
+        spec:
+          accessModes:
+            - ReadWriteOnce
+          resources:
+            requests:
+              storage: "1Gi"

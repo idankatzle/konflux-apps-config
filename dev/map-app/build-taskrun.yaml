@@ -1,0 +1,17 @@
+apiVersion: tekton.dev/v1
+kind: TaskRun
+metadata:
+  generateName: build-map-app-run-
+  namespace: idankatz-dev
+spec:
+  serviceAccountName: pipeline
+  taskRef:
+    name: build-kaniko-map-app
+  params:
+    - name: IMAGE
+      value: image-registry.openshift-image-registry.svc:5000/idankatz-dev/map-app:latest
+  workspaces:
+    - name: source
+      persistentVolumeClaim:
+        claimName: pvc-36f7ed22b7
+

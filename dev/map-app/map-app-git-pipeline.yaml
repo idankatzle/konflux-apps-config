@@ -13,6 +13,9 @@ spec:
     - name: git-revision
       type: string
       default: master
+    - name: image
+      type: string
+      default: image-registry.openshift-image-registry.svc:5000/idankatz-dev/map-app:latest
 
   tasks:
     - name: clone-repo
@@ -27,5 +30,17 @@ spec:
           value: source
       workspaces:
         - name: output
+          workspace: shared-workspace
+
+    - name: build-image
+      runAfter:
+        - clone-repo
+      taskRef:
+        name: build-kaniko-map-app
+      params:
+        - name: IMAGE
+          value: $(params.image)
+      workspaces:
+        - name: source
           workspace: shared-workspace
 

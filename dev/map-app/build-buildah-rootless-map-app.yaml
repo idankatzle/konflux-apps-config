@@ -1,0 +1,32 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: build-buildah-rootless-map-app
+  namespace: idankatz-dev
+spec:
+  params:
+    - name: IMAGE
+      type: string
+  workspaces:
+    - name: source
+  steps:
+    - name: build-and-push
+      image: registry.redhat.io/ubi9/buildah
+      env:
+        - name: BUILDAH_ISOLATION
+          value: chroot
+      securityContext:
+        runAsUser: 1001
+      script: |
+        set -e
+
+        echo "Building image (rootless buildah)"
+        buildah bud \
+          --storage-driver=vfs \
+          -f $(workspaces.source.path)/dev/Dockerfile \
+          -t $(params.IMAGE) \
+          $(workspaces.source.path)/dev
+
+        echo "Pushing image"
+        buildah push $(params.IMAGE)
+
