@@ -2,7 +2,7 @@ from flask import Flask, jsonify
 import folium
 
 app = Flask(__name__)
-
+#test1
 @app.route("/")
 def home():
     # יצירת מפה עולמית
